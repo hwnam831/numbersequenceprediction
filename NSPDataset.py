@@ -47,10 +47,9 @@ class NSPDataset(Dataset):
         self.size = size
         self.lendian = lendian
         self.numbers = numbers
-        self.inputlen = (maxdigits+1)*numbers + 1
-        self.inputs = np.zeros([size, self.inputlen, 16], dtype=float)
-        self.targetlen = maxdigits+1
-        self.targets = np.ones([size, self.targetlen], dtype=int)*Token.pad
+        self.maxlen = (maxdigits+1)*(numbers+1) + 1
+        self.inputs = np.zeros([size, self.maxlen, 16], dtype=float)
+        self.targets = np.ones([size, self.maxlen], dtype=int)*Token.pad
         self.iscreated = [False for i in range(size)]
 
     def __len__(self):
@@ -62,26 +61,42 @@ class NSPDataset(Dataset):
             seed1 = np.random.randint(1, 10**ndigits)
             seed2 = np.random.randint(1, 10**ndigits)
             seq, target = self.rule(seed1, seed2, self.numbers)
-            y = num2vec(target, ndigits, self.lendian)
-            self.targets[idx][:] = Token.pad
-            self.targets[idx][:len(y)] = y
-            self.targets[idx][len(y)] = Token.eos
             pos = 1
             self.inputs[idx][0][Token.delim] = 1
+            self.targets[idx][0] = Token.delim
+            
             for i in range(self.numbers):
                 vec = num2vec(seq[i], ndigits, self.lendian)
                 for j,v in enumerate(vec):
                     self.inputs[idx][pos+j][v] = 1
+                    self.targets[idx][pos+j] = v
                 self.inputs[idx][pos+ndigits][Token.delim] = 1
+                self.targets[idx][pos+ndigits] = Token.delim
                 pos = pos + ndigits + 1
-            if pos < self.inputlen:
-                self.inputs[idx][pos:,Token.pad] = 1
-            self.iscreated[idx] = True
 
+            y = num2vec(target, ndigits, self.lendian)
+
+            self.inputs[idx][pos:pos+len(y),Token.mask] = 1
+            self.targets[idx][pos:pos+len(y)] = y
+            self.inputs[idx][pos+len(y)][Token.eos] = 1
+            self.targets[idx][pos+len(y)] = Token.eos
+
+            if pos+len(y)+1 < self.maxlen:
+                self.inputs[idx][pos+len(y)+1:,Token.pad] = 1
+            
+            self.iscreated[idx] = True
         return self.inputs[idx], self.targets[idx]
+def printseq(x,y):
+    tokenmap = ['0','1','2','3','4','5','6','7','8','9','_',' ','S','E','M','C']
+    print("input:")
+    xseq = np.argmax(x,-1)
+    print('\t' + ' '.join([tokenmap[n] for n in xseq]))
+    print("target:")
+    print('\t' + ' '.join([tokenmap[n] for n in y]))
 
 dataset = NSPDataset(fib,4)
 for i in range(10):
     x,y = dataset.__getitem__(i)
-    print(np.argmax(x,-1))
-    print(y)
+    printseq(x,y)
+    #print(np.argmax(x,-1))
+    #print(y)
