@@ -28,6 +28,29 @@ def fib(seed1, seed2, numbers):
     target = seq[-2]+seq[-1]
     return seq, target
 
+def arith(seed1, seed2, numbers):
+    seq = [seed1, seed2] if seed1<seed2 else [seed2,seed1]
+    for i in range(2, numbers):
+        seq.append(2*seq[i-1]-seq[i-2])
+    target = 2*seq[-1]-seq[-2]
+    return seq, target
+
+def count(seed1, seed2, numbers):
+    seq = [seed1]
+    diff = seed2%10+10
+    for i in range(1, numbers):
+        seq.append(seq[i-1]+diff)
+    target = seq[-1]+diff
+    return seq, target
+
+def palindrome(seed1, seed2, numbers):
+    seq = [seed1]
+    for i in range(1, numbers):
+        nstr = str(seq[i-1])
+        seq[i] = int(nstr[::-1])
+    target = int(str(seq[-1])[::-1])
+    return seq, target
+
 def num2vec(num, ndigits, lendian=True):
     digits = [int(c) for c in str(num)]
     if len(digits)<ndigits:
@@ -58,8 +81,8 @@ class NSPDataset(Dataset):
     def __getitem__(self, idx):
         if not self.iscreated[idx]:
             ndigits = np.random.randint(self.mindigits, self.maxdigits+1)
-            seed1 = np.random.randint(1, 10**ndigits)
-            seed2 = np.random.randint(1, 10**ndigits)
+            seed1 = np.random.randint(10**(ndigits-1), 10**ndigits)
+            seed2 = np.random.randint(10**(ndigits-1), 10**ndigits)
             seq, target = self.rule(seed1, seed2, self.numbers)
             pos = 1
             self.inputs[idx][0][Token.delim] = 1
@@ -94,7 +117,7 @@ def printseq(x,y):
     print("target:")
     print('\t' + ' '.join([tokenmap[n] for n in y]))
 
-dataset = NSPDataset(fib,4)
+dataset = NSPDataset(fib,5,numbers=3)
 for i in range(10):
     x,y = dataset.__getitem__(i)
     printseq(x,y)
