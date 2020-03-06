@@ -71,8 +71,8 @@ class NSPDataset(Dataset):
         self.lendian = lendian
         self.numbers = numbers
         self.maxlen = (maxdigits+1)*(numbers+1) + 1
-        self.inputs = np.zeros([size, self.maxlen, 16], dtype=float)
-        self.targets = np.ones([size, self.maxlen], dtype=int)*Token.pad
+        self.inputs = np.zeros([size, self.maxlen, 16], dtype=np.float32)
+        self.targets = np.ones([size, self.maxlen], dtype=np.int64)*Token.pad
         self.iscreated = [False for i in range(size)]
 
     def __len__(self):
@@ -116,10 +116,11 @@ def printseq(x,y):
     print('\t' + ' '.join([tokenmap[n] for n in xseq]))
     print("target:")
     print('\t' + ' '.join([tokenmap[n] for n in y]))
-
-dataset = NSPDataset(fib,5,numbers=3)
-for i in range(10):
-    x,y = dataset.__getitem__(i)
-    printseq(x,y)
-    #print(np.argmax(x,-1))
-    #print(y)
+if __name__ == '__main__':
+    dataset = NSPDataset(fib,5,numbers=3)
+    loader = DataLoader(dataset, batch_size=4)
+    for i in range(10):
+        x,y = dataset.__getitem__(i)
+        printseq(x,y)
+        #print(np.argmax(x,-1))
+        #print(y)
