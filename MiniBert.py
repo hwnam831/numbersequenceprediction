@@ -236,10 +236,10 @@ class MiniBertConfig(object):
     output_attentions=False
     output_hidden_states=False
     hidden_size=256
-    num_hidden_layers=4
+    num_hidden_layers=6
     num_attention_heads=2
-    intermediate_size=512
+    intermediate_size=2048
     hidden_dropout_prob=0.1
     attention_probs_dropout_prob=0.1
-    max_position_embeddings=512
+    max_position_embeddings=128
     layer_norm_eps=1e-12

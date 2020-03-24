@@ -12,9 +12,9 @@ if __name__ == '__main__':
     parser.add_argument(
             "--net",
             type=str,
-            choices=['cnn', 'minibert', 'lstm', 'gru'],
-            default='minibert',
-            help='cnn | minibert | lstm | gru')
+            choices=['cnn', 'tf', 'minibert', 'lstm', 'gru'],
+            default='tf',
+            help='cnn | tf | minibert | lstm | gru')
     parser.add_argument(
             "--epochs",
             type=int,
@@ -54,10 +54,12 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.net == 'minibert':
-        model = Models.TfAE(args.model_size).cuda()
-    else:
+        model = Models.MiniBertAE(args.model_size).cuda()
+    elif args.net == 'cnn':
         model = Models.CNNAutoEncoder(args.model_size).cuda()
-    dataset = NSPDataset(fib, args.digits, size=args.train_size)
+    else :
+        model = Models.TfAE(args.model_size).cuda()
+    dataset = NSPDataset(fib, args.digits, 2, size=args.train_size)
     valset = NSPDataset(fib, args.digits+1, args.digits-1, size=args.validation_size)
     trainloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True, num_workers=4)
     valloader = DataLoader(valset, batch_size=args.batch_size, shuffle=True, num_workers=2)
