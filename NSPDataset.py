@@ -61,7 +61,8 @@ def num2vec(num, ndigits, lendian=True):
         digits.reverse()
     return np.array(digits)
 
-class NSPDataset(Dataset):
+#Dataset class for autoencoding setup (CNN, BERT, etc)
+class NSPDatasetAE(Dataset):
     def __init__(self, rule, maxdigits, mindigits=1, numbers=2, size=25600, lendian=False):
         self.rule = rule
         assert maxdigits > mindigits
@@ -111,7 +112,7 @@ class NSPDataset(Dataset):
         return self.inputs[idx], self.targets[idx]
 
 #Seq2Seq version + no one-hot encoding
-class NSPDataset2(Dataset):
+class NSPDatasetS2S(Dataset):
     def __init__(self, rule, maxdigits, mindigits=1, numbers=2, size=25600, lendian=False):
         self.rule = rule
         assert maxdigits > mindigits
@@ -161,7 +162,7 @@ def printseq2(x,y):
     print("target:")
     print('\t' + ' '.join([tokenmap[n] for n in y]))
 if __name__ == '__main__':
-    dataset = NSPDataset2(fib,5)
+    dataset = NSPDatasetS2S(fib,5)
     loader = DataLoader(dataset, batch_size=4)
     for i in range(10):
         x,y = dataset.__getitem__(i)

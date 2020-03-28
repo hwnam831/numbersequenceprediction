@@ -3,7 +3,7 @@ import torch.nn as nn
 import numpy as np
 import argparse
 import Models
-from NSPDataset import NSPDataset, Token, fib
+from NSPDataset import NSPDatasetAE, Token, fib
 from torch.utils.data import Dataset, DataLoader
 
 if __name__ == '__main__':
@@ -57,8 +57,8 @@ if __name__ == '__main__':
         model = Models.TfAE(args.model_size).cuda()
     else:
         model = Models.CNNAutoEncoder(args.model_size).cuda()
-    dataset = NSPDataset(fib, args.digits, size=args.train_size)
-    valset = NSPDataset(fib, args.digits+1, args.digits-1, size=args.validation_size)
+    dataset = NSPDatasetAE(fib, args.digits, size=args.train_size)
+    valset = NSPDatasetAE(fib, args.digits+1, args.digits-1, size=args.validation_size)
     trainloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True, num_workers=4)
     valloader = DataLoader(valset, batch_size=args.batch_size, shuffle=True, num_workers=2)
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)

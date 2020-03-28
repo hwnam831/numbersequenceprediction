@@ -3,7 +3,7 @@ import torch.nn as nn
 import numpy as np
 import argparse
 import Models
-from NSPDataset import NSPDataset2, Token, fib
+from NSPDataset import NSPDatasetS2S, Token, fib
 from torch.utils.data import Dataset, DataLoader
 
 if __name__ == '__main__':
@@ -56,13 +56,13 @@ if __name__ == '__main__':
         model = Models.TfS2S(args.model_size).cuda()
     else:
         model = Models.TfS2S(args.model_size).cuda()
-    dataset = NSPDataset2(fib, args.digits, size=args.train_size)
-    valset = NSPDataset2(fib, args.digits+1, args.digits-1, size=args.validation_size)
+    dataset = NSPDatasetS2S(fib, args.digits, size=args.train_size)
+    valset = NSPDatasetS2S(fib, args.digits+1, args.digits-1, size=args.validation_size)
     trainloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True, num_workers=4)
     valloader = DataLoader(valset, batch_size=args.batch_size, shuffle=True, num_workers=2)
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
 
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 1, gamma=1.01)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 1, gamma=1.05)
     criterion = nn.CrossEntropyLoss()
 
     epoch = args.epochs
@@ -109,6 +109,8 @@ if __name__ == '__main__':
             vlen = vlen + seqcorrect.nelement()
         print("val accuracy = "+str(vcorrect/vlen))
         #scheduler.step()
+        if tcorrect/tlen > 0.5:
+            break
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 1, gamma=0.96)
     for e in range(epoch):
         print('\nEpoch #{}:'.format(e+1))
